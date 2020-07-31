@@ -1,6 +1,47 @@
 # Extending this template
 A docker image is available for use from docker hub: rsoldner/nuxt-template:1.0
 
+## Simplest docker run for testing
+```
+docker run -it --rm --name nuxt-template-test -p 8080:3000 rsoldner/nuxt-template:1.0
+```
+
+## Adding your own code
+
+### Dockerfile
+This is the recommended way to extend the template image. Create a dockerfile that copies your code into the container to overwrite the template files.
+```
+FROM rsoldner/nuxt-template:1.0
+
+# Use for npm configuration (e.g. registry=...)
+COPY npmrc /root/.npmrc
+
+# Add additional npm packages
+COPY src/package.json /src/package.json
+RUN npm install
+
+COPY src/components /src/components
+COPY src/layouts /src/layouts
+COPY src/pages /src/pages
+COPY src/nuxt.config.js /src/nuxt.config.js
+
+RUN npm run build
+CMD npm run start
+```
+
+### Volume maps for dev
+The docker run command here shows using volume maps to override with your project code.
+NOTE: if you map the /src directory, you will lose the node_modules
+```
+docker run \
+    -it --rm \
+    --name nuxt-template-test \
+    -p 8080:3000 \
+    -v ${PWD}/pages:/src/pages \
+    -v ${PWD}/components:/src/components \
+    rsoldner/nuxt-template:1.0
+```
+
 # Starting From Scratch
 - Create a directory for the nuxt-template project with a src dir
 ```
